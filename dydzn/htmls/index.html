@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 구성 모형 연구 계획서</title>
+    <!-- Tailwind CSS CDN을 로드합니다. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 구글 폰트 'Inter'를 로드합니다. -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 기본 폰트와 배경 이미지를 설정합니다. */
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            /* 몬스테라 잎 배경 이미지 설정 */
+            background-image: url('https://images.unsplash.com/photo-1616421946399-6e3e4a2c07d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzMjM4NDZ8MHwxfHNlYXJjaHw3fHxtb25zdGVyYSUyMGxlYWZ8ZW58MHx8fHwxNjE2NDIxOTQ3&ixlib=rb-1.2.1&q=80&w=1080');
+            background-size: cover; /* 이미지가 전체 화면을 덮도록 설정합니다. */
+            background-position: center; /* 이미지를 중앙에 배치합니다. */
+            background-attachment: fixed; /* 스크롤 시 배경이 고정되도록 합니다. */
+        }
+        /* 섹션 제목 스타일을 정의합니다. */
+        .section-title {
+            color: #111827;
+            font-weight: 700;
+            border-left: 4px solid #4ade80; /* 초록색 왼쪽 선으로 변경 */
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem; /* 글자 크기 조정 */
+        }
+        /* 소제목 스타일을 정의합니다. */
+        .subsection-title {
+            color: #4b5563;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem; /* 글자 크기 조정 */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto px-4 py-12 md:px-8 lg:px-12 max-w-5xl">
+        <!-- 웹 페이지의 주 제목 섹션입니다. -->
+        <header class="text-center mb-12 bg-white/90 p-6 md:p-8 rounded-xl shadow-lg">
+            <h1 class="text-4xl sm:text-5xl font-bold mb-4 text-gray-900">3D 구성 모형의 조립 난이도 예측 및 시뮬레이션</h1>
+            <p class="text-lg text-gray-600">고등학생 정보과제연구 계획서</p>
+        </header>
+
+        <!-- 연구 계획서의 각 항목을 섹션으로 나눕니다. -->
+        <main class="space-y-12">
+
+            <!-- 1. 연구 주제 섹션 -->
+            <section class="bg-white/90 p-6 md:p-8 rounded-xl shadow-lg">
+                <h2 class="section-title">1. 연구 주제</h2>
+                <div class="mb-6">
+                    <p class="text-lg font-medium text-gray-800 leading-relaxed mb-4">
+                        3D 구성 모형의 조립 난이도 예측 및 시뮬레이션
+                    </p>
+                    <p class="text-gray-600 leading-relaxed">
+                        **연구 주제는 앞으로 진행할 모든 연구의 방향을 결정하는 가장 중요한 첫걸음입니다.** 간결하면서도 명확하게 연구의 핵심 내용을 담아야 합니다. 단순히 '레고'나 '3D 모델링'과 같이 일반적인 단어보다는, 어떤 문제를 해결하고 어떤 결과물을 만들 것인지 구체적으로 명시하는 것이 좋습니다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 2. 서론 섹션 -->
+            <section class="bg-white/90 p-6 md:p-8 rounded-xl shadow-lg">
+                <h2 class="section-title">2. 서론</h2>
+                <div class="mb-6">
+                    <h3 class="subsection-title">연구 동기 및 필요성</h3>
+                    <p class="text-gray-800 leading-relaxed">
+                        평소 레고를 조립하는 걸 좋아하지만, 시간이 너무 오래 걸리고 가끔 이해하는 데 시간을 너무 많이 쏟을 때가 있었고, 최근에 다뤄본 Fushion에서의 3D 도형 설계에서도 어려운 점을 많이 느껴서 이 연구 주제를 설정하게 됐습니다.
+                    </p>
+                    <ul class="list-disc list-inside mt-4 text-gray-600 space-y-2">
+                        <li>**동기:** 레고나 프라모델과 같은 3D 구성 모형을 조립할 때, 설명서만으로는 조립 난이도를 파악하기 어렵고, 특히 복잡한 부분에서 많은 시간과 노력이 소요되는 개인적인 어려움을 겪었습니다.</li>
+                        <li>**필요성:** 현재 3D 구성 모형 설계 및 제조 분야에서는 사용자의 조립 경험을 고려한 난이도 예측 시스템이 미흡합니다. 본 연구는 이러한 문제점을 해결하여, 설계 단계에서부터 조립 난이도를 객관적으로 예측하고 개선할 수 있는 시스템을 구축함으로써 사용자 경험을 향상시키고자 합니다.</li>
+                    </ul>
+                </div>
+                <div class="mb-6">
+                    <h3 class="subsection-title">연구 목적</h3>
+                    <p class="text-gray-800 leading-relaxed">
+                        복잡한 3D 구성 모형(예: 프라모델, 레고)을 설계 단계에서부터 조립 난이도를 예측하고, 이를 줄이는 데 도움을 주는 시뮬레이션 도구를 만듭니다.
+                    </p>
+                    <ul class="list-disc list-inside mt-4 text-gray-600 space-y-2">
+                        <li>**목적 1:** 3D 구성 모형의 조립 난이도에 영향을 미치는 핵심 요인을 파악하고, 이를 정량화할 수 있는 지표를 개발합니다.</li>
+                        <li>**목적 2:** 개발된 난이도 지표를 기반으로, 3D 모델링 파일을 분석하여 자동으로 조립 난이도를 예측하는 알고리즘을 구현합니다.</li>
+                        <li>**목적 3:** 사용자가 3D 모형을 직접 조작하며 조립 과정을 시뮬레이션하고, 난이도 변화를 시각적으로 확인할 수 있는 웹 기반 시뮬레이션 도구를 제작합니다.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="subsection-title">연구 문제</h3>
+                    <p class="text-gray-800 leading-relaxed">
+                        이 연구를 통해 답을 얻고자 하는 구체적이고 명확한 질문들입니다.
+                    </p>
+                    <ol class="list-decimal list-inside mt-4 text-gray-600 space-y-2">
+                        <li>3D 구성 모형의 조립 난이도를 객관적으로 측정할 수 있는 지표에는 어떤 것들이 있는가?</li>
+                        <li>부품 간의 연결 관계와 조립 순서가 난이도에 어떤 영향을 미치는가?</li>
+                        <li>개발된 시뮬레이션 도구는 사용자가 조립 난이도를 직관적으로 이해하고 개선하는 데 실질적인 도움을 줄 수 있는가?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- 3. 이론적 배경 섹션 -->
+            <section class="bg-white/90 p-6 md:p-8 rounded-xl shadow-lg">
+                <h2 class="section-title">3. 이론적 배경</h2>
+                <div class="mb-6">
+                    <h3 class="subsection-title">관련 이론 및 기술</h3>
+                    <ul class="list-disc list-inside text-gray-600 space-y-2">
+                        <li>**그래프 이론:** 복잡한 조립 순서를 부품 간의 연결 관계를 나타내는 그래프로 모델링하고, 이를 분석하여 최적의 조립 순서를 찾는 데 활용할 수 있습니다.</li>
+                        <li>**3D 모델링 및 렌더링 기술:** 3D 모델링 소프트웨어(예: Autodesk Fusion 360, Blender)를 활용하여 모형을 설계하고, 이를 웹에서 시각화하기 위해 Three.js와 같은 렌더링 라이브러리를 사용합니다.</li>
+                        <li>**사용자 인터페이스(UI) / 사용자 경험(UX) 디자인:** 사용자가 시뮬레이션 도구를 쉽게 이해하고 사용할 수 있도록 직관적인 인터페이스와 긍정적인 경험을 제공하는 디자인 원리를 적용합니다.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="subsection-title">선행 연구 조사</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        연구의 신뢰성을 높이기 위해 참고할 만한 선행 연구 분야나 검색 키워드입니다.
+                    </p>
+                    <ul class="list-disc list-inside mt-4 text-gray-600 space-y-2">
+                        <li>`3D model assembly sequence planning` (3D 모델 조립 순서 계획)</li>
+                        <li>`Lego building difficulty prediction` (레고 조립 난이도 예측)</li>
+                        <li>`computational geometry for part fitting` (부품 결합을 위한 계산 기하학)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 4. 연구 내용 및 방법 섹션 -->
+            <section class="bg-white/90 p-6 md:p-8 rounded-xl shadow-lg">
+                <h2 class="section-title">4. 연구 내용 및 방법</h2>
+                <div class="mb-6">
+                    <h3 class="subsection-title">연구 대상 및 범위</h3>
+                    <ul class="list-disc list-inside text-gray-600 space-y-2">
+                        <li>**연구 대상:** 레고나 프라모델과 같은 부품 기반의 3D 구성 모형.</li>
+                        <li>**연구 범위:** 본 연구는 복잡한 조립 난이도에 초점을 맞춰, 50개 이상의 부품으로 이루어진 모형을 대상으로 합니다. 시뮬레이션 도구는 `.stl` 포맷의 3D 모델 파일만을 지원 범위로 한정합니다.</li>
+                    </ul>
+                </div>
+                <div class="mb-6">
+                    <h3 class="subsection-title">연구 절차 및 방법</h3>
+                    <ol class="list-decimal list-inside text-gray-600 space-y-2">
+                        <li>**1단계:** 난이도 요인 분석 및 지표 개발</li>
+                        <li>**2단계:** 알고리즘 설계 및 구현 (파이썬)</li>
+                        <li>**3단계:** 시뮬레이션 도구 제작 (HTML, CSS, JavaScript, Three.js)</li>
+                        <li>**4단계:** 실험 및 결과 분석</li>
+                    </ol>
+                </div>
+                <div>
+                    <h3 class="subsection-title">예상 주요 활동 일정</h3>
+                    <ul class="list-disc list-inside text-gray-600 space-y-2">
+                        <li>**1~2주차:** 연구 주제 및 계획서 확정, 선행 연구 조사</li>
+                        <li>**3~5주차:** 난이도 요인 분석 및 지표 개발, 알고리즘 설계</li>
+                        <li>**6~8주차:** 난이도 예측 알고리즘 구현 및 테스트</li>
+                        <li>**9~12주차:** 웹 기반 시뮬레이션 도구 제작</li>
+                        <li>**13~14주차:** 도구 성능 실험 및 사용자 평가</li>
+                        <li>**15주차:** 최종 보고서 작성 및 발표 자료 준비</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 5. 기대 효과 및 활용 방안 섹션 -->
+            <section class="bg-white/90 p-6 md:p-8 rounded-xl shadow-lg">
+                <h2 class="section-title">5. 기대 효과 및 활용 방안</h2>
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li>**개인적 활용:** 조립 전 난이도와 소요 시간을 예측하여 실패율을 줄이고 즐거움을 극대화할 수 있습니다.</li>
+                    <li>**산업적 활용:** 장난감/프라모델 제조업체나 3D 프린팅 기업이 제품을 설계할 때, 사용자의 조립 편의성을 고려한 디자인 개선에 활용될 수 있습니다.</li>
+                    <li>**교육적 활용:** 초·중등 교육에서 컴퓨터 과학, 공학, 디자인 등 다양한 분야를 통합한 융합 교육 콘텐츠로 활용될 수 있습니다.</li>
+                </ul>
+            </section>
+
+            <!-- 6. 참고 문헌 섹션 -->
+            <section class="bg-white/90 p-6 md:p-8 rounded-xl shadow-lg">
+                <h2 class="section-title">6. 참고 문헌</h2>
+                <ol class="list-decimal list-inside text-gray-600 space-y-2">
+                    <li>김윤정. (2023). 3D 오브젝트의 형태와 구성에 따른 폴리곤 리덕션의 효과 비교 연구. *한국디자인학회지*, *15*(2), 45-58.</li>
+                </ol>
+            </section>
+
+        </main>
+    </div>
+</body>
+</html>
+```
