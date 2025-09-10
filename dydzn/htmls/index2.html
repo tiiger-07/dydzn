@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관심사 기반 조 편성 결과</title>
+    <title>관심사 기반 조 편성 연구 및 결과</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,29 +13,49 @@
             margin: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
             background: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        h1 {
-            text-align: center;
+        h1, h2, h3 {
             color: #4CAF50;
         }
-        .group-section {
-            border: 1px solid #ddd;
-            padding: 15px;
+        h1 {
+            text-align: center;
+        }
+        .section {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 20px;
             margin-bottom: 20px;
+        }
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .reason-box {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-left: 5px solid #4CAF50;
+            margin-top: 10px;
+        }
+        pre {
+            background: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .group-result {
+            margin-top: 15px;
+            border: 1px solid #ccc;
+            padding: 15px;
             border-radius: 5px;
         }
-        .group-section h2 {
+        .group-result h3 {
             margin-top: 0;
             color: #333;
-        }
-        .group-section p {
-            margin: 5px 0;
         }
         .ratio-list {
             list-style: none;
@@ -55,36 +75,167 @@
 <body>
 
     <div class="container">
-        <h1>관심사 기반 조 편성 결과</h1>
-
-        <div class="group-section">
-            <h2>--- Group 1 ---</h2>
-            <p><strong>구성원:</strong> 김민준, 이하윤, 최지우, 박지원</p>
-            <p><strong>관심사 비율:</strong></p>
-            <ul class="ratio-list">
-                <li class="ratio-item">코딩: 25.0%</li>
-                <li class="ratio-item">게임: 8.3%</li>
-                <li class="ratio-item">여행: 16.7%</li>
-                <li class="ratio-item">독서: 8.3%</li>
-                <li class="ratio-item">영화: 16.7%</li>
-                <li class="ratio-item">운동: 8.3%</li>
-                <li class="ratio-item">음악: 8.3%</li>
-            </ul>
+        <h1>관심사 비율을 고려한 조원 나누기 연구 보고서</h1>
+        
+        <div class="section">
+            <h2>1. 연구 개요</h2>
+            <div class="reason-box">
+                <strong>선정이유:</strong> 팀플에서 관심사가 공통되었다는 점이 있다면 조의 분위기와 활동성이 더욱 상승하기 때문이다.
+            </div>
+            <p><strong>목적:</strong> 조 추첨을 할때, 관심사들을 제시하고 난 후 관심사들의 비율을 맞추고, 여러 번 조 제작을 돌렸을 때 같은 조가 나오지 않을 방법을 찾는다.</p>
+            <p><strong>연구 문제:</strong> 관심사 비율을 맞추어 조정하는 추첨 알고리즘을 제작할 수 있을까?</p>
         </div>
 
-        <div class="group-section">
-            <h2>--- Group 2 ---</h2>
-            <p><strong>구성원:</strong> 박서준, 정우진, 김민지, 이서윤</p>
-            <p><strong>관심사 비율:</strong></p>
-            <ul class="ratio-list">
-                <li class="ratio-item">게임: 16.7%</li>
-                <li class="ratio-item">영화: 8.3%</li>
-                <li class="ratio-item">음악: 16.7%</li>
-                <li class="ratio-item">운동: 16.7%</li>
-                <li class="ratio-item">코딩: 16.7%</li>
-                <li class="ratio-item">독서: 16.7%</li>
-                <li class="ratio-item">여행: 8.3%</li>
+        <div class="section">
+            <h2>2. 이론적 배경</h2>
+            <p>본 연구에 필요한 기초 이론들은 다음과 같다.</p>
+            <ul>
+                <li><strong>그래프 이론:</strong> 사람들을 노드로, 공통 관심사를 에지로 연결하여 최적의 그룹을 찾는 문제로 모델링할 수 있다. 이 모델을 이용해 그룹 내 연결성을 최대화하는 알고리즘을 설계할 수 있다.</li>
+                <li><strong>최적화 이론:</strong> 특정 목표(예: 그룹 내 관심사 다양성)를 달성하면서 제약 조건(예: 각 그룹의 인원수)을 만족하는 해답을 찾는 분야이다. 관심사 비율을 최대한 비슷하게 맞추는 것은 일종의 최적화 문제로 볼 수 있다.</li>
+                <li><strong>머신러닝 및 데이터 마이닝:</strong> 사람들의 관심사 데이터에서 패턴을 찾아내고, 이를 기반으로 비슷한 성향의 사람들을 묶는 방법을 학습할 수 있다. 특히 군집화(Clustering) 기법이 직접적으로 적용될 수 있다.</li>
             </ul>
+        </div>
+        
+        <div class="section">
+            <h2>3. 연구 내용 및 방법</h2>
+            <p><strong>연구 내용:</strong> 입력된 자료를 바탕으로 관심사 비율을 고려하여 조를 분할하는 알고리즘을 연구한다.</p>
+            <p><strong>연구 방법:</strong> Python의 랜덤 함수를 포함한 알고리즘을 사용하여 임의의 조를 구성하고 최적화 과정을 거쳐 출력한다.</p>
+        </div>
+
+        <div class="section">
+            <h2>4. 지식 습득 및 기능 실습</h2>
+            <h3>4-1. 실행 코드 (Python)</h3>
+            <pre><code>
+import random
+from collections import Counter
+
+def group_by_interests(participants, group_size):
+    """
+    참가자들을 관심사에 따라 그룹으로 나눕니다.
+    """
+    if not participants:
+        return {}
+    
+    participant_names = list(participants.keys())
+    random.shuffle(participant_names)
+    
+    total_participants = len(participant_names)
+    num_groups = total_participants // group_size
+    if total_participants % group_size != 0:
+        num_groups += 1
+
+    groups = [[] for _ in range(num_groups)]
+    
+    for i, name in enumerate(participant_names):
+        groups[i % num_groups].append(name)
+    
+    for _ in range(10):
+        for i in range(num_groups):
+            for j in range(i + 1, num_groups):
+                if not groups[i] or not groups[j]:
+                    continue
+                
+                member1 = random.choice(groups[i])
+                member2 = random.choice(groups[j])
+
+                temp_groups_i = [p for p in groups[i] if p != member1] + [member2]
+                temp_groups_j = [p for p in groups[j] if p != member2] + [member1]
+
+                current_score = calculate_score(groups[i], participants) + calculate_score(groups[j], participants)
+                new_score = calculate_score(temp_groups_i, participants) + calculate_score(temp_groups_j, participants)
+
+                if new_score > current_score:
+                    groups[i] = temp_groups_i
+                    groups[j] = temp_groups_j
+    
+    final_groups = {f"Group {i+1}": group for i, group in enumerate(groups)}
+    return final_groups
+
+def calculate_score(group, all_participants):
+    """
+    조의 관심사 균형 점수를 계산합니다.
+    """
+    all_interests = []
+    for member in group:
+        all_interests.extend(all_participants[member])
+    
+    interest_counts = Counter(all_interests)
+    score = sum(count * (count - 1) for count in interest_counts.values())
+    return score
+
+def get_interest_ratios(group, all_participants):
+    """
+    각 조의 관심사 비율을 계산합니다.
+    """
+    all_interests = []
+    for member in group:
+        all_interests.extend(all_participants[member])
+    
+    total_interests = len(all_interests)
+    if total_interests == 0:
+        return "관심사 없음"
+        
+    interest_counts = Counter(all_interests)
+    ratios = {interest: f"{(count / total_interests) * 100:.1f}%" for interest, count in interest_counts.items()}
+    return ratios
+
+# --- 메인 실행 ---
+if __name__ == "__main__":
+    participants = {
+        "김민준": ["코딩", "게임", "여행"],
+        "박서준": ["게임", "영화", "음악"],
+        "이하윤": ["코딩", "독서", "영화"],
+        "정우진": ["운동", "음악", "코딩"],
+        "최지우": ["여행", "운동", "음악"],
+        "김민지": ["독서", "여행", "게임"],
+        "이서윤": ["코딩", "독서", "운동"],
+        "박지원": ["영화", "음악", "게임"],
+    }
+    
+    group_size = 4
+    
+    groups = group_by_interests(participants, group_size)
+    
+    for group_name, members in groups.items():
+        print(f"--- {group_name} ---")
+        print(f"구성원: {', '.join(members)}")
+        
+        ratios = get_interest_ratios(members, participants)
+        print(f"관심사 비율: {ratios}")
+        print("-" * 20)
+            </code></pre>
+        </div>
+
+        <div class="section">
+            <h2>5. 실행 결과</h2>
+            <div class="group-result">
+                <h3>--- Group 1 ---</h3>
+                <p><strong>구성원:</strong> 김민준, 이하윤, 최지우, 박지원</p>
+                <p><strong>관심사 비율:</strong></p>
+                <ul class="ratio-list">
+                    <li class="ratio-item">코딩: 25.0%</li>
+                    <li class="ratio-item">게임: 8.3%</li>
+                    <li class="ratio-item">여행: 16.7%</li>
+                    <li class="ratio-item">독서: 8.3%</li>
+                    <li class="ratio-item">영화: 16.7%</li>
+                    <li class="ratio-item">운동: 8.3%</li>
+                    <li class="ratio-item">음악: 8.3%</li>
+                </ul>
+            </div>
+            <div class="group-result">
+                <h3>--- Group 2 ---</h3>
+                <p><strong>구성원:</strong> 박서준, 정우진, 김민지, 이서윤</p>
+                <p><strong>관심사 비율:</strong></p>
+                <ul class="ratio-list">
+                    <li class="ratio-item">게임: 16.7%</li>
+                    <li class="ratio-item">영화: 8.3%</li>
+                    <li class="ratio-item">음악: 16.7%</li>
+                    <li class="ratio-item">운동: 16.7%</li>
+                    <li class="ratio-item">코딩: 16.7%</li>
+                    <li class="ratio-item">독서: 16.7%</li>
+                    <li class="ratio-item">여행: 8.3%</li>
+                </ul>
+            </div>
         </div>
 
     </div>
