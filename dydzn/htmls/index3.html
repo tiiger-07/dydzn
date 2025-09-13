@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100에 가까운 숫자 만들기 게임</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .player-select {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .player-select label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #555;
+        }
+        select {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        button {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            background-color: #3498db;
+            color: #ffffff;
+            font-weight: 700;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #output-area {
+            background: #f4f7f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.6;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            border: 1px solid #e0e0e0;
+        }
+        .winner {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .round-info {
+            font-weight: bold;
+            color: #555;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px dashed #ddd;
+        }
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        .score-table th, .score-table td {
+            border: 1px solid #ddd;
+            padding: 8px; /* 간격 축소 */
+            text-align: left;
+        }
+        .score-table th {
+            background-color: #3498db;
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .score-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .score-table tr:hover {
+            background-color: #e9e9e9;
+        }
+        .orange-text {
+            color: #ff9800; /* 주황색으로 변경 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>100에 가까운 숫자 만들기 게임</h1>
+    
+    <div class="controls">
+        <div class="player-select">
+            <label for="num-players">참여 인원:</label>
+            <select id="num-players">
+                <option value="3">3명</option>
+                <option value="4">4명</option>
+                <option value="5">5명</option>
+            </select>
+        </div>
+        <button id="start-button">게임 시작</button>
+    </div>
+
+    <div id="output-area">게임 시뮬레이션 결과가 여기에 표시됩니다.</div>
+
+    <script>
+        const allCards = Array.from({ length: 100 }, (_, i) => i + 1);
+
+        function generatePlayerNames(num) {
+            const names = {};
+            for (let i = 0; i < num; i++) {
+                const name = String.fromCharCode(65 + i);
+                names[name] = { 'cards': [], 'score': 0 };
+            }
+            return names;
+        }
+
+        function drawCards(cardsPool, num) {
+            if (cardsPool.length < num) {
+                return [];
+            }
+            const drawnCards = [];
+            for (let i = 0; i < num; i++) {
+                const randomIndex = Math.floor(Math.random() * cardsPool.length);
+                drawnCards.push(cardsPool.splice(randomIndex, 1)[0]);
+            }
+            return drawnCards;
+        }
+
+        function findBestCombination(hand_cards) {
+            const comboCards = hand_cards.slice(0, Math.min(4, hand_cards.length));
+            const operators = ['+', '+', '-', '-'];
+            
+            if (comboCards.length < 2) {
+                return [comboCards[0] || 0, comboCards[0] ? String(comboCards[0]) : ""];
+            }
+
+            const opCombo = operators.slice(0, Math.min(2, comboCards.length - 1));
+            
+            let result = comboCards[0];
+            const expressionParts = [String(comboCards[0])];
+            
+            for (let i = 1; i < comboCards.length; i++) {
+                const op = opCombo[Math.floor(Math.random() * opCombo.length)];
+                expressionParts.push(op);
+                expressionParts.push(String(comboCards[i]));
+                if (op === '+') {
+                    result += comboCards[i];
+                } else {
+                    result -= comboCards[i];
+                }
+            }
+            return [result, expressionParts.join(" ")];
+        }
+
+        document.getElementById('start-button').addEventListener('click', () => {
+            const numPlayers = parseInt(document.getElementById('num-players').value);
+            const players = generatePlayerNames(numPlayers);
+            const cardsPool = [...allCards];
+            const outputArea = document.getElementById('output-area');
+            let outputHTML = "";
+            let roundNumber = 1;
+            let gameWinner = null;
+
+            outputHTML += `<p><strong>게임을 시작합니다! ${numPlayers}명의 플레이어가 참여합니다.</strong></p>`;
+            outputHTML += `<p>이 시뮬레이션에서는 각 라운드에서 무작위로 승자가 결정됩니다.</p>`;
+            for (const player in players) {
+                players[player].cards = drawCards(cardsPool, 4);
+                outputHTML += `<p>플레이어 ${player} 초기 카드: [${players[player].cards.join(', ')}]</p>`;
+            }
+            outputHTML += `<hr class="my-4" />`;
+
+            while (gameWinner === null) {
+                outputHTML += `<div class="round-info"><p>--- 라운드 ${roundNumber} 시작 ---</p></div>`;
+                
+                const playerNames = Object.keys(players);
+                const winningPlayerIndex = Math.floor(Math.random() * playerNames.length);
+                const winner = playerNames[winningPlayerIndex];
+
+                players[winner].score += 1;
+                
+                outputHTML += `<p><strong>이번 라운드 승자: 플레이어 ${winner}</strong></p>`;
+
+                outputHTML += `<table class="score-table"><thead><tr><th>플레이어</th><th>만든 숫자</th><th>점수</th></tr></thead><tbody>`;
+                for (const player in players) {
+                    const [calculatedValue, expression] = findBestCombination(players[player].cards);
+                    const createdNumberClass = (player === winner) ? 'orange-text' : '';
+                    outputHTML += `<tr><td>${player}</td><td class="${createdNumberClass}">${calculatedValue}</td><td>${players[player].score}점</td></tr>`;
+                }
+                outputHTML += `</tbody></table>`;
+                
+                for (const player in players) {
+                    if (players[player].score >= 10) {
+                        gameWinner = player;
+                        break;
+                    }
+                }
+
+                if (gameWinner) {
+                    outputHTML += `<p class="mt-4"><strong>축하합니다! 플레이어 ${gameWinner}가 총점 10점을 달성하여 게임에서 최종 승리했습니다!</strong></p>`;
+                }
+                
+                outputHTML += `<hr class="my-4" />`;
+                roundNumber++;
+            }
+
+            outputArea.innerHTML = outputHTML;
+        });
+    </script>
+</div>
+
+</body>
+</html>
