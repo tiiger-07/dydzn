@@ -8,7 +8,9 @@ html_folder = os.path.join(current_dir, "htmls")
 # 렌더링할 HTML 파일들을 정의하고 페이지 이름을 지정합니다.
 pages = {
     "3D 구성 모형 연구 계획서": "index.html",
-    "관심사 기반 조 편성 프로그램": "index2.html"
+    "관심사 기반 조 편성 프로그램": "index2.html",
+    # 새로운 게임 시뮬레이션 페이지를 추가합니다.
+    "100에 가까운 숫자 만들기 게임": "index3.html"
 }
 
 # Streamlit 앱의 제목과 레이아웃을 설정합니다.
