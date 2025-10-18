@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주차장 최단 경로 탐색 시뮬레이션</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Inter 폰트 사용 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 95vw;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #4A4A4A; /* 주차장 바닥 색상 */
+            border-radius: 8px;
+            touch-action: none; /* 캔버스 내 터치 이벤트 방지 */
+        }
+        #result-display {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            text-align: center;
+            min-height: 2em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-3xl font-bold text-gray-800 text-center">🚗 주차장 최단 경로 탐색 시뮬레이션 (동적 공간)</h1>
+    
+    <div id="result-display" class="bg-blue-100 p-3 rounded-lg shadow-inner">
+        시뮬레이션 시작 버튼을 눌러주세요.
+    </div>
+
+    <canvas id="parkingCanvas" width="750" height="450"></canvas>
+
+    <div class="flex justify-center gap-4">
+        <button id="startButton" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-full transition duration-300 shadow-md">
+            시뮬레이션 시작 / 초기화
+        </button>
+    </div>
+</div>
+
+<script>
+    // Constants
+    const CANVAS_ID = 'parkingCanvas';
+    const RESULT_DISPLAY_ID = 'result-display';
+    const START_BUTTON_ID = 'startButton';
+    
+    // Grid Setup
+    const COLS = 25;
+    const ROWS = 15;
+    const TILE_SIZE = 30; // 30x30 pixels
+    
+    // Map Codes
+    const PATH = 0;       // 통로 (이동 가능)
+    const WALL = 1;       // 벽/점유된 공간 (이동 불가능)
+    const ENTRANCE = 2;   // 입구/자동차 시작 위치
+    
+    // 빈 공간 코드 정의 (3부터 9까지 할당)
+    const EMPTY_A = 3;
+    const EMPTY_B = 4;
+    const EMPTY_C = 5;
+    const SCAN = 6;       // BFS 스캔 중인 경로
+    const SHORTEST_PATH = 7; // 최종 선택된 최단 경로
+    const EMPTY_D = 8;    // 빈 공간 D (새로 추가됨)
+    const EMPTY_E = 9;    // 빈 공간 E (새로 추가됨)
+
+    // 모든 빈 공간 코드를 저장하여 동적 확인에 사용
+    const ALL_EMPTY_CODES = [EMPTY_A, EMPTY_B, EMPTY_C, EMPTY_D, EMPTY_E];
+
+    // Colors
+    const COLOR_MAP = {
+        [PATH]: '#6B6B6B',      // 통로 (진한 회색)
+        [WALL]: '#333333',      // 벽/차량 (아주 진한 회색)
+        [ENTRANCE]: '#10B981',  // 시작 (에메랄드 그린)
+        [EMPTY_A]: '#F97316',   // 주황
+        [EMPTY_B]: '#3B82F6',   // 파랑
+        [EMPTY_C]: '#EF4444',   // 빨강
+        [EMPTY_D]: '#8B5CF6',   // 보라 (New)
+        [EMPTY_E]: '#059669',   // 초록 (New)
+        [SCAN]: '#FDE047',      // 스캔 중 (노랑)
+        [SHORTEST_PATH]: '#34D399' // 최단 경로 (밝은 초록)
+    };
+    
+    // Car State
+    let car = { x: 0, y: 0, pathIndex: 0, currentPath: null };
+    let grid = [];
+    let emptySpaces = []; // [{x, y, id, code}]
+
+    // Simulation Control
+    let isRunning = false;
+    let scanInterval, moveInterval;
+
+    // Canvas setup
+    const canvas = document.getElementById(CANVAS_ID);
+    const ctx = canvas.getContext('2d');
+    const resultDisplay = document.getElementById(RESULT_DISPLAY_ID);
+    const startButton = document.getElementById(START_BUTTON_ID);
+
+    // Directions for BFS (Up, Down, Left, Right)
+    const DIRS = [
+        { dx: 0, dy: -1 }, 
+        { dx: 0, dy: 1 }, 
+        { dx: -1, dy: 0 }, 
+        { dx: 1, dy: 0 }
+    ];
+
+    /**
+     * 특정 셀 코드가 빈 주차 공간 코드인지 확인합니다.
+     * @param {number} cellCode - 셀의 코드
+     * @returns {boolean} - 빈 공간 여부
+     */
+    function isCellEmptySpace(cellCode) {
+        return ALL_EMPTY_CODES.includes(cellCode);
+    }
+    
+    /**
+     * 주차장 그리드 구조를 초기화합니다.
+     */
+    function setupInitialGrid() {
+        // 25x15 그리드 초기화 (기존 구조 유지)
+        grid = Array(ROWS).fill(0).map(() => Array(COLS).fill(PATH));
+
+        // 1. 외곽 벽 및 상단/하단 주차 공간 설정
+        for (let r = 0; r < ROWS; r++) {
+            grid[r][0] = WALL;
+            grid[r][COLS - 1] = WALL;
+        }
+        for (let c = 0; c < COLS; c++) {
+            grid[0][c] = WALL;
+            grid[ROWS - 1][c] = WALL;
+        }
+
+        // 2. 주차 면 (벽) 설정
+        // 중앙 섹션 주차 면
+        for (let r = 3; r <= 11; r += 2) {
+            for (let c = 1; c < COLS - 1; c++) {
+                if (c % 2 !== 0) {
+                    grid[r][c] = WALL; 
+                    grid[r][c + 8] = WALL;
+                    grid[r][c + 16] = WALL;
+                }
+            }
+        }
+        
+        // 최종 통로 정리
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (grid[r][c] !== WALL) {
+                    grid[r][c] = PATH;
+                }
+            }
+        }
+        
+        // 주요 벽 (차량) 다시 설정
+        for (let c = 2; c < COLS - 2; c += 2) {
+            grid[1][c] = WALL;
+            grid[ROWS - 2][c] = WALL;
+        }
+        const verticalWalls = [3, 4, 5, 6, 8, 9, 10, 11]; 
+        const parkingCols = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22]; 
+
+        verticalWalls.forEach(r => {
+            parkingCols.forEach(c => {
+                grid[r][c] = WALL;
+            });
+        });
+        
+        // 통로로 설정해야 할 곳 명확히
+        for (let r = 2; r < ROWS - 2; r++) {
+             for (let c = 1; c < COLS - 1; c++) {
+                 // 드라이브 웨이 (통로)
+                 if (r === 2 || r === 12 || c === 7 || c === 17) {
+                     grid[r][c] = PATH;
+                 }
+             }
+        }
+
+        // 중앙 기둥 또는 막힌 구역 (시각적 다양성)
+        grid[5][10] = WALL;
+        grid[6][10] = WALL;
+        grid[6][11] = WALL;
+        grid[8][14] = WALL;
+        grid[8][15] = WALL;
+        grid[10][4] = WALL;
+        
+    }
+
+    /**
+     * 무작위로 3, 4, 또는 5개의 빈 주차 공간(A, B, C, ...)을 설정합니다.
+     */
+    function placeEmptySpaces() {
+        emptySpaces = [];
+        const possibleSpaces = [];
+
+        // 1. 무작위 빈 공간 수 결정 (3, 4, 5 중)
+        const numSpaces = Math.floor(Math.random() * 3) + 3; // 3, 4, or 5
+        const spaceIds = ['A', 'B', 'C', 'D', 'E'].slice(0, numSpaces);
+        const spaceCodes = [EMPTY_A, EMPTY_B, EMPTY_C, EMPTY_D, EMPTY_E].slice(0, numSpaces);
+
+        // 모든 주차 면 (WALL) 중 빈 공간 후보를 찾습니다.
+        for (let r = 1; r < ROWS - 1; r++) {
+            for (let c = 1; c < COLS - 1; c++) {
+                if (grid[r][c] === WALL) {
+                    // 벽(차량) 중 통로(PATH)에 인접한 곳만 주차 공간으로 간주
+                    if (DIRS.some(dir => 
+                        grid[r + dir.dy] && 
+                        grid[r + dir.dy][c + dir.dx] === PATH
+                    )) {
+                        possibleSpaces.push({ x: c, y: r });
+                    }
+                }
+            }
+        }
+
+        // 2. 무작위로 N개 선택
+        for (let i = 0; i < numSpaces; i++) {
+            if (possibleSpaces.length === 0) break;
+            
+            const randomIndex = Math.floor(Math.random() * possibleSpaces.length);
+            const { x, y } = possibleSpaces.splice(randomIndex, 1)[0];
+            
+            const id = spaceIds[i];
+            const code = spaceCodes[i];
+
+            grid[y][x] = code;
+            emptySpaces.push({ x, y, id, code });
+        }
+    }
+
+    /**
+     * 시작 위치를 설정하고 자동차 객체를 초기화합니다.
+     */
+    function setupEntrance() {
+        // 입구 위치 설정 (예: 좌측 하단 통로)
+        const entranceX = 1;
+        const entranceY = ROWS - 2;
+        grid[entranceY][entranceX] = ENTRANCE;
+        car.x = entranceX;
+        car.y = entranceY;
+    }
+
+    /**
+     * 캔버스에 그리드를 그립니다.
+     */
+    function drawGrid() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const cellType = grid[r][c];
+                
+                // 배경 채우기
+                ctx.fillStyle = COLOR_MAP[cellType] || COLOR_MAP[PATH];
+                ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                // 주차 구획선 및 통로선 그리기 (시각적 구분)
+                if (isCellEmptySpace(cellType)) {
+                    // 빈 주차 공간 테두리
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(c * TILE_SIZE + 1, r * TILE_SIZE + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+                }
+
+                // 주차 면에 레이블 표시 (A, B, C, D, E)
+                if (isCellEmptySpace(cellType)) {
+                    const space = emptySpaces.find(s => s.code === cellType);
+                    if (space) {
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 16px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(space.id, c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 자동차를 그립니다.
+     */
+    function drawCar() {
+        // 자동차 모양 (직사각형)
+        ctx.fillStyle = '#000000'; // 자동차 색상
+        const carSize = TILE_SIZE * 0.7;
+        const offset = (TILE_SIZE - carSize) / 2;
+        ctx.fillRect(car.x * TILE_SIZE + offset, car.y * TILE_SIZE + offset, carSize, carSize);
+        
+        // 헤드라이트 (앞쪽 방향 표시)
+        ctx.fillStyle = '#FFEB3B';
+        const lightSize = carSize / 5;
+        // 현재는 pathIndex를 통해 방향을 알 수 없으므로, 중앙에 간단한 표시만
+        ctx.fillRect(car.x * TILE_SIZE + TILE_SIZE / 2 - lightSize / 2, car.y * TILE_SIZE + offset, lightSize, lightSize);
+    }
+    
+    /**
+     * BFS 알고리즘을 실행하여 최단 경로와 거리를 찾습니다.
+     * @param {number} startX - 시작 X 좌표
+     * @param {number} startY - 시작 Y 좌표
+     * @returns {{distance: number, path: Array<{x: number, y: number}>, targetId: string}} 최단 경로 정보
+     */
+    function runBFS(startX, startY) {
+        // BFS를 위한 큐, 거리 맵, 부모 맵 초기화
+        let queue = [{ x: startX, y: startY, dist: 0 }];
+        let visited = Array(ROWS).fill(0).map(() => Array(COLS).fill(false));
+        let distance = Array(ROWS).fill(0).map(() => Array(COLS).fill(Infinity));
+        let parent = Array(ROWS).fill(0).map(() => Array(COLS).fill(null));
+
+        visited[startY][startX] = true;
+        distance[startY][startX] = 0;
+        
+        let shortestPathData = { distance: Infinity, path: [], targetId: '' };
+        
+        let pathFoundCount = 0;
+        const pathsFound = []; // 발견된 빈 공간의 경로 정보를 저장
+
+        const simulationSteps = []; // 스캔 과정을 시각화하기 위한 단계 저장
+
+        // BFS 실행
+        while (queue.length > 0) {
+            const current = queue.shift();
+            const { x, y, dist } = current;
+
+            // 시각화 단계 기록 (경로를 스캔 중임을 표시)
+            if (grid[y][x] === PATH) {
+                simulationSteps.push({ x, y, type: SCAN });
+            }
+
+            // 빈 공간 발견!
+            const isTarget = isCellEmptySpace(grid[y][x]);
+            if (isTarget) {
+                const targetSpace = emptySpaces.find(s => s.x === x && s.y === y);
+                
+                // 최단 경로 재구성
+                let path = [];
+                let curr = { x, y };
+                while(curr) {
+                    path.unshift(curr);
+                    curr = parent[curr.y][curr.x];
+                }
+                
+                // 시작 노드 제거 (경로에는 빈 공간까지만 포함)
+                if (path.length > 0) path.shift(); 
+                
+                pathsFound.push({
+                    distance: dist, 
+                    path: path, 
+                    targetId: targetSpace.id
+                });
+                
+                pathFoundCount++;
+                
+                // 모든 빈 공간을 발견했으면 탐색 종료
+                if (pathFoundCount === emptySpaces.length) break; 
+            }
+
+            // 4방향 탐색
+            for (const dir of DIRS) {
+                const nx = x + dir.dx;
+                const ny = y + dir.dy;
+
+                // 유효성 검사 (경계, 방문 여부, 벽이 아닌지)
+                if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && 
+                    !visited[ny][nx] && grid[ny][nx] !== WALL) {
+                    
+                    // 주차 공간(A, B, C, D, E)도 탐색 가능해야 함 (최종 도착지)
+                    if (grid[ny][nx] === PATH || isCellEmptySpace(grid[ny][nx])) {
+                        visited[ny][nx] = true;
+                        distance[ny][nx] = dist + 1;
+                        parent[ny][nx] = { x, y };
+                        queue.push({ x: nx, y: ny, dist: dist + 1 });
+                    }
+                }
+            }
+        }
+
+        // 발견된 경로 중 최단 경로 선택
+        if (pathsFound.length > 0) {
+            shortestPathData = pathsFound.reduce((min, current) => 
+                (current.distance < min.distance ? current : min), 
+                pathsFound[0]
+            );
+        }
+        
+        // 시각화 단계를 저장하여 반환
+        return { shortestPathData, simulationSteps };
+    }
+
+
+    /**
+     * 시뮬레이션의 스캔 단계를 시각화합니다.
+     * @param {Array} steps - 시각화할 단계 배열
+     */
+    function startScanning(steps) {
+        let stepIndex = 0;
+        let tempGrid = JSON.parse(JSON.stringify(grid)); // 원본 그리드 복사
+        
+        clearInterval(scanInterval);
+        
+        const spaceNames = emptySpaces.map(s => s.id).join(', ');
+        resultDisplay.innerHTML = `🔎 **스캔 중:** 빈 주차 공간 ${spaceNames}을 탐색합니다...`;
+
+        // 스캔 과정 애니메이션
+        scanInterval = setInterval(() => {
+            if (stepIndex >= steps.length) {
+                clearInterval(scanInterval);
+                
+                // --- 수정된 부분: 스캔 완료 후 빈 공간 총 개수 표시 ---
+                const totalEmptySpaces = emptySpaces.length;
+                resultDisplay.innerHTML = `✅ **스캔 완료!** 총 <span class="text-blue-600 font-bold">${totalEmptySpaces}개</span>의 빈 공간(${spaceNames})을 확인했습니다. 최단 경로로 이동을 시작합니다.`;
+
+                // 1.5초 후 이동 시작 (사용자에게 메시지를 보여줄 시간)
+                setTimeout(() => {
+                    startMovement(shortestPath.path, shortestPath.targetId);
+                }, 1500);
+                // ---------------------------------------------------
+
+                return;
+            }
+
+            const { x, y } = steps[stepIndex];
+            
+            // PATH인 경우에만 SCAN 표시 (빈 공간은 색상 유지)
+            if (grid[y][x] === PATH) {
+                tempGrid[y][x] = SCAN;
+            }
+            
+            // 현재 스캔 상황을 기반으로 임시 그리드를 다시 그립니다.
+            drawTempGrid(tempGrid);
+            drawCar();
+
+            stepIndex++;
+        }, 50); // 스캔 속도 조절
+
+        /**
+         * 임시 그리드를 그리는 함수
+         */
+        function drawTempGrid(currentGrid) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    let cellType = currentGrid[r][c];
+                    
+                    // 빈 공간(A, B, C, D, E)은 원본 색상을 유지하도록 덮어씌움
+                    if (isCellEmptySpace(grid[r][c])) {
+                        cellType = grid[r][c];
+                    }
+                    
+                    ctx.fillStyle = COLOR_MAP[cellType] || COLOR_MAP[PATH];
+                    ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                    // 레이블 및 테두리 다시 그리기
+                    if (isCellEmptySpace(grid[r][c])) {
+                        const space = emptySpaces.find(s => s.code === grid[r][c]);
+                         ctx.strokeStyle = '#FFFFFF';
+                         ctx.lineWidth = 2;
+                         ctx.strokeRect(c * TILE_SIZE + 1, r * TILE_SIZE + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+                        if (space) {
+                            ctx.fillStyle = 'white';
+                            ctx.font = 'bold 16px Inter';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(space.id, c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * 자동차 이동을 시작합니다.
+     * @param {Array} path - 이동할 경로 배열
+     * @param {string} targetId - 최종 목적지 ID
+     */
+    function startMovement(path, targetId) {
+        if (path.length === 0) return;
+
+        // 최단 경로를 그리드에 표시
+        let finalGrid = JSON.parse(JSON.stringify(grid));
+        path.forEach(p => {
+            if (finalGrid[p.y][p.x] === PATH) {
+                finalGrid[p.y][p.x] = SHORTEST_PATH;
+            }
+        });
+        
+        // 결과 표시
+        const distance = path.length;
+        resultDisplay.innerHTML = `✅ **최단 거리의 주차 공간:** <span class="text-blue-600 font-bold">${targetId}</span> (총 ${distance} 단계 이동)`;
+
+        // 자동차 이동 애니메이션
+        car.currentPath = path;
+        car.pathIndex = 0;
+        
+        // 이동 시작 전 최종 경로 지도 그리기
+        drawFinalMap(finalGrid);
+        
+        clearInterval(moveInterval);
+        moveInterval = setInterval(() => {
+            if (car.pathIndex >= car.currentPath.length) {
+                clearInterval(moveInterval);
+                resultDisplay.innerHTML = `🅿️ **도착 완료!** 주차 공간 ${targetId}에 주차했습니다.`;
+                return;
+            }
+
+            // 다음 위치로 이동
+            const nextPos = car.currentPath[car.pathIndex];
+            car.x = nextPos.x;
+            car.y = nextPos.y;
+            car.pathIndex++;
+
+            // 지도와 자동차 다시 그리기
+            drawFinalMap(finalGrid);
+            drawCar();
+
+        }, 150); // 이동 속도 조절
+        
+        /**
+         * 최종 경로가 표시된 지도를 그리는 함수
+         */
+        function drawFinalMap(currentGrid) {
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+             for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cellType = currentGrid[r][c];
+                    
+                    // 배경 채우기
+                    ctx.fillStyle = COLOR_MAP[cellType] || COLOR_MAP[PATH];
+                    ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                    // 레이블 및 테두리 다시 그리기
+                    if (isCellEmptySpace(grid[r][c])) {
+                        const space = emptySpaces.find(s => s.code === grid[r][c]);
+                         ctx.strokeStyle = '#FFFFFF';
+                         ctx.lineWidth = 2;
+                         ctx.strokeRect(c * TILE_SIZE + 1, r * TILE_SIZE + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+                        if (space) {
+                            ctx.fillStyle = 'white';
+                            ctx.font = 'bold 16px Inter';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(space.id, c * TILE_SIZE + TILE_SIZE / 2, r * TILE_SIZE + TILE_SIZE / 2);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    // 전역 변수로 BFS 결과 저장
+    let shortestPath = null;
+    let simulationSteps = null;
+
+    /**
+     * 시뮬레이션을 초기화하고 시작합니다.
+     */
+    function initSimulation() {
+        // 모든 인터벌 정리
+        clearInterval(scanInterval);
+        clearInterval(moveInterval);
+        isRunning = false;
+        
+        // 1. 맵 설정 및 빈 공간 배치
+        setupInitialGrid();
+        placeEmptySpaces(); // 이제 3, 4, 5개 중 랜덤으로 배치됨
+        setupEntrance();
+        
+        // 2. 초기 맵 그리기
+        drawGrid();
+        drawCar();
+        const spaceNames = emptySpaces.map(s => s.id).join(', ');
+        resultDisplay.innerHTML = `빈 공간: ${spaceNames} (${emptySpaces.length}개). 입구에서 최단 경로를 탐색합니다.`;
+
+        // 3. BFS 실행 (스캔 전 경로 계산)
+        const bfsResult = runBFS(car.x, car.y);
+        shortestPath = bfsResult.shortestPathData;
+        simulationSteps = bfsResult.simulationSteps;
+        
+        if (shortestPath.path.length > 0) {
+            startButton.textContent = "탐색 시작";
+            startButton.onclick = startScanAndMove;
+        } else {
+             resultDisplay.innerHTML = `<span class="text-red-600">오류:</span> 빈 공간으로 가는 경로를 찾을 수 없습니다. 다시 시도해 주세요.`;
+             startButton.textContent = "다시 초기화";
+        }
+    }
+    
+    /**
+     * 스캔과 이동을 순차적으로 실행하는 함수
+     */
+    function startScanAndMove() {
+         if (isRunning) return;
+         isRunning = true;
+         startButton.textContent = "탐색 중...";
+         startButton.disabled = true; // 스캔 중 버튼 비활성화
+         
+         // 스캔 시작
+         startScanning(simulationSteps);
+         
+         // 이동 완료 후 버튼 다시 활성화 및 초기화 기능 복구
+         // 총 시간 = (스캔 시간) + (결과 표시 대기 시간) + (이동 시간) + (여유 시간)
+         const totalTime = (simulationSteps.length * 50) + 1500 + (shortestPath.path.length * 150) + 500; 
+         setTimeout(() => {
+             startButton.textContent = "시뮬레이션 시작 / 초기화";
+             startButton.disabled = false;
+             isRunning = false;
+             startButton.onclick = initSimulation;
+         }, totalTime);
+    }
+    
+    // 초기 로드 시 시뮬레이션 설정
+    window.onload = () => {
+        canvas.width = COLS * TILE_SIZE;
+        canvas.height = ROWS * TILE_SIZE;
+        initSimulation();
+    };
+    
+    // 버튼 초기 이벤트 핸들러 설정
+    startButton.onclick = initSimulation;
+
+</script>
+</body>
+</html>
