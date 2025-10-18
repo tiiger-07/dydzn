@@ -7,12 +7,12 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 html_folder = os.path.join(current_dir, "htmls")
 
 # 렌더링할 HTML 파일들을 정의하고 페이지 이름을 지정합니다.
-# '100에 가까운 숫자 만들기 게임' (index3.html) 페이지와 기존의 index4.html 경로를 모두 추가했습니다.
 pages = {
     "3D 구성 모형 연구 계획서": "index.html",
     "관심사 기반 조 편성 프로그램": "index2.html",
     "100에 가까운 숫자 만들기 게임": "index3.html",
-    "맞춤 경로 추천 시뮬레이션 계획서": "index4.html" 
+    "맞춤 경로 추천 시뮬레이션 계획서": "index4.html",
+    "주차장 최단 경로 탐색 시뮬레이션": "index5.html"  # 동적 빈 공간 시뮬레이션 추가
 }
 
 # Streamlit 앱의 제목과 레이아웃을 설정합니다.
